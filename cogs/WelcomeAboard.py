@@ -14,13 +14,9 @@ class WelcomeAboard(commands.Cog):
         if (ctx.author.voice is not None):
             print("Welcoming aboard...")
             channel = ctx.author.voice.channel
-            print(channel)
             voice = await channel.connect()
-            source = FFmpegPCMAudio('./cogs/welcomeaboardclip.mp3')
-            if (source is not None):
-                print('source')
+            source = FFmpegPCMAudio('./sounds/welcomeaboardclip.mp3')
             voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
-
         else:
             await ctx.send("You are not in a voice channel")
     
