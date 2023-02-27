@@ -1,39 +1,30 @@
 # bot.py
+import asyncio
 import os
 import discord
-import random
+from discord.ext import commands
 from dotenv import load_dotenv
 
+# Get discord token from env file
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.voice_states = True
+# Setup intents
+intents = discord.Intents.all()
 
-client = discord.Client(intents=intents)
+# Setup command prefix
+client = commands.Bot(command_prefix='!', intents=intents)
 
-@client.event
-async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+# Load cogs from cogs folder
+async def load():
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            print(filename)
+            await client.load_extension(f'cogs.{filename[:-3]}')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+# Run bot
+async def main():
+    await load()
+    await client.start(TOKEN)
 
-@client.event
-async def on_voice_state_update(member, before, after):
-
-    vcs = client.get_channel
-
-    print(f'Logged in as:\t {client.user.name}')
-
-    channel = client.get_channel('id')
-    await client.join_voice_channel(channel)
-    print('Bot has joined the channel.')
-
-client.run(TOKEN)
+asyncio.run(main())
