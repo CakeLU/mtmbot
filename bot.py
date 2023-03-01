@@ -1,5 +1,4 @@
 # bot.py
-import asyncio
 import os
 import discord
 from discord.ext import commands
@@ -9,22 +8,25 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-# Setup intents
-intents = discord.Intents.all()
+class MyBot(commands.Bot):
 
-# Setup command prefix
-client = commands.Bot(command_prefix='!', intents=intents)
+    def __init__(self):
+        super().__init__(
+            command_prefix='$',
+            intents = discord.Intents.all(),
+            application_id= 1079456113847713923
+        )
 
-# Load cogs from cogs folder
-async def load():
-    for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
-            print(filename)
-            await client.load_extension(f'cogs.{filename[:-3]}')
+    async def setup_hook(self):
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py'):
+                print(filename)
+                await self.load_extension(f'cogs.{filename[:-3]}')
 
-# Run bot
-async def main():
-    await load()
-    await client.start(TOKEN)
+        await bot.tree.sync(guild = discord.Object(id = 751591466668785734))
+        
+    async def on_ready(self):
+        print(f'{self.user} has connected to Discord!')
 
-asyncio.run(main())
+bot = MyBot()
+bot.run(TOKEN)
