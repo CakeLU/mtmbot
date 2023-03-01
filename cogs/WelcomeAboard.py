@@ -1,81 +1,64 @@
+import discord
 import asyncio
 from discord.ext import commands
 from discord import FFmpegPCMAudio
+from discord import app_commands
+from discord.app_commands import Choice
 
 class WelcomeAboard(commands.Cog):
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
 
-    # Command
-    @commands.command()
-    async def welcomeaboard(self, ctx):
-        await ctx.send("Welcome aboard!")
-        if (ctx.author.voice is not None):
-            print("Welcoming aboard...")
-            channel = ctx.author.voice.channel
+
+    @app_commands.command(
+        name = "welcomeaboard",
+        description = "Welcome Aboard!"
+    )
+
+    @app_commands.describe(
+        line = "Pick voice line"
+    )
+
+    @app_commands.choices(line = [
+        Choice(name = "Welcome Aboard!", value = "./sounds/welcomeaboardclip.mp3"),
+        Choice(name = "Welcome Aboard! x3", value = "./sounds/welcomeaboard3.mp3"),
+        Choice(name = "Welcome Really Aboard!", value = "./sounds/welcomereallyaboard.mp3"),
+        Choice(name = "WELCOME ABOARD!", value = "./sounds/welcomeaboardlayered.mp3"),
+        Choice(name = "Miles to Meal!", value = "./sounds/milestomeal.mp3")
+    ])
+
+    async def welcomeaboard(
+        self,
+        interaction: discord.Interaction,
+        line: app_commands.Choice[str]
+    ) -> None:
+        
+        if (interaction.user.voice is not None):
+            channel = interaction.user.voice.channel
             voice = await channel.connect()
-            source = FFmpegPCMAudio('./sounds/welcomeaboardclip.mp3')
+            source = FFmpegPCMAudio(line.value)
             voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
+            await interaction.response.send_message(line.name)
         else:
-            await ctx.send("You are not in a voice channel")
+            await interaction.response.send_message("You are not in a voice channel")
 
-    # Command
-    @commands.command()
-    async def welcomeaboard3(self, ctx):
-        await ctx.send("Welcome aboard!")
-        if (ctx.author.voice is not None):
-            print("Welcoming aboard 3 times...")
-            channel = ctx.author.voice.channel
-            voice = await channel.connect()
-            source = FFmpegPCMAudio('./sounds/welcomeaboard3.mp3')
-            voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
-        else:
-            await ctx.send("You are not in a voice channel")
-    
-    # Command
-    @commands.command()
-    async def welcomereallyaboard(self, ctx):
-        await ctx.send("Welcome REALLY aboard!")
-        if (ctx.author.voice is not None):
-            print("Welcoming aboard...")
-            channel = ctx.author.voice.channel
-            voice = await channel.connect()
-            source = FFmpegPCMAudio('./sounds/welcomereallyaboard.mp3')
-            voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
-        else:
-            await ctx.send("You are not in a voice channel")
+    @app_commands.command(
+        name = "follow",
+        description = "Follow Miles to Meal on all platforms!"
+    )
 
-    # Command
-    @commands.command()
-    async def WELCOMEABOARD(self, ctx):
-        await ctx.send("WELCOME ABOARD")
-        if (ctx.author.voice is not None):
-            print("Welcoming aboard...")
-            channel = ctx.author.voice.channel
-            voice = await channel.connect()
-            source = FFmpegPCMAudio('./sounds/welcomeaboardlayered.mp3')
-            voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
-        else:
-            await ctx.send("You are not in a voice channel")
+    async def follow(
+        self,
+        interaction: discord.Interaction
+    ) -> None:
 
-    # Command
-    @commands.command()
-    async def milestomeal(self, ctx):
-        await ctx.send("Welcome REALLY aboard!")
-        if (ctx.author.voice is not None):
-            print("Miles to meal...")
-            channel = ctx.author.voice.channel
-            voice = await channel.connect()
-            source = FFmpegPCMAudio('./sounds/milestomeal.mp3')
-            voice.play(source, after=lambda e: asyncio.run_coroutine_threadsafe(voice.disconnect(), loop=voice.loop))
-        else:
-            await ctx.send("You are not in a voice channel")
+        await interaction.response.send_message("""Follow Miles to Meal on all platforms!
+Instagram: @milestomeal
+TikTok: @milestomeal""")
 
-    # Command
-    @commands.command()
-    async def follow(self, ctx):
-        await ctx.send("Follow milestomeal on Instagram! https://www.instagram.com/milestomeal/")
-
-async def setup(client):
-    await client.add_cog(WelcomeAboard(client))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(
+        WelcomeAboard(bot),
+        guild = discord.Object(id = 751591466668785734)
+    )
