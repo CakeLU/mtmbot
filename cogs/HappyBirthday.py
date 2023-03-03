@@ -5,16 +5,15 @@ from discord import FFmpegPCMAudio
 from discord import app_commands
 from discord.app_commands import Choice
 
-class WelcomeAboard(commands.Cog):
+class HappyBirthday(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-
-    # Define the 'welcomeaboard' command
+    # Define the 'Happy Birthday' command
     @app_commands.command(
-        name = "welcomeaboard",
-        description = "Welcome Aboard!"
+        name = 'happybirthday',
+        description = 'Some happy birthdays are better unspoken'
     )
 
     # Describe what the 'line' parameter is
@@ -24,20 +23,15 @@ class WelcomeAboard(commands.Cog):
 
     # Provide user with voice line choices
     @app_commands.choices(line = [
-        Choice(name = "Welcome Aboard!", value = "./sounds/welcomeaboardclip.mp3"),
-        Choice(name = "Welcome Aboard! x3", value = "./sounds/welcomeaboard3.mp3"),
-        Choice(name = "Welcome Really Aboard!", value = "./sounds/welcomereallyaboard.mp3"),
-        Choice(name = "WELCOME ABOARD!", value = "./sounds/welcomeaboardlayered.mp3"),
-        Choice(name = "Miles to Meal!", value = "./sounds/milestomeal.mp3")
+        Choice(name = "Mr. Bahrou", value = "./sounds/happybirthdaymrbahrou.mp3")
     ])
 
-    # Define the welcomeaboard function that ties to the previously-defined command
-    async def welcomeaboard(
+    async def happybirthday(
         self,
         interaction: discord.Interaction,
-        line: app_commands.Choice[str]      # Pass app_commands.Choice to access Choice parameters
+        line: app_commands.Choice[str]
     ) -> None:
-        
+
         # Run the function
 
         # Check if user who used the command is in the voice channel
@@ -54,26 +48,9 @@ class WelcomeAboard(commands.Cog):
         else:
             await interaction.response.send_message("You are not in a voice channel")
 
-    # Define the 'follow' command
-    @app_commands.command(
-        name = "follow",
-        description = "Follow Miles to Meal on all platforms!"
-    )
-
-    # Define the follow function that ties to previously-defined command
-    async def follow(
-        self,
-        interaction: discord.Interaction
-    ) -> None:
-
-        # Send social media information
-        await interaction.response.send_message("""Follow Miles to Meal on all platforms!
-Instagram: @milestomeal
-TikTok: @milestomeal""")
-
 # Setup function that creates slash commands and adds to bot
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(
-        WelcomeAboard(bot),
+        HappyBirthday(bot),
         guild = discord.Object(id = 751591466668785734)
     )
