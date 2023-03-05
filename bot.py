@@ -23,7 +23,7 @@ class MyBot(commands.Bot):
         # Load cogs
         for filename in os.listdir('./cogs'):
             if filename.endswith('.py'):
-                print(filename)
+                print("Loading extension: {}".format(filename[:-3]))
                 await self.load_extension(f'cogs.{filename[:-3]}')
 
         # Sync bot with guild to run slash commands
