@@ -128,13 +128,11 @@ class PCPartPicker(commands.Cog):
         main_info_embed = discord.Embed(
             title = pcpartpickerlist.list_name,
             url = list_url,
-            description = "Component Summary:",
             color  = discord.Color.purple()
         )
 
         main_info_embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         main_info_embed.set_thumbnail(url="https://pcpartpicker.com/static/forever/img/blog/new-site.jpg")
-        main_info_embed.set_footer(text="Press the arrow buttons below to cycle through each component.")
 
         # Add all of the components to the main info embed
         for component in pcpartpickerlist.components:
@@ -146,15 +144,15 @@ class PCPartPicker(commands.Cog):
         # Create seperate embeds for each component
         for component in pcpartpickerlist.components:
             component_embed = discord.Embed(
-                title = component.component_name,
+                title = "{} ({})".format(pcpartpickerlist.list_name, component.component_type),
+                description=component.component_name,
                 url = component.component_url,
                 color  = discord.Color.purple()
             )
 
-            component_embed.set_author(name=component.component_type)
+            component_embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
             component_embed.set_thumbnail(url="https://pcpartpicker.com/static/forever/img/blog/new-site.jpg")
             component_embed.set_image(url=component.component_image_url)
-            component_embed.set_footer(text="Press the arrow buttons below to cycle through each component.")
 
             # Add the component embed to the embeds list
             embeds.append(component_embed)
