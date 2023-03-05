@@ -35,8 +35,11 @@ class EmbedPaginator(discord.ui.View):
         self.add_item(self._goto_last_page_button)
 
     async def send_paginator(self):
-        # Send the initial message - requires followup since the original interaction is deferred
-        await self._interaction.followup.send(embed=self._embeds[self._current_page], view=self, ephemeral=self._ephemeral)
+        # Send the initial embed
+        try:
+            await self._interaction.response.send_message(embed=self._embeds[self._current_page], view=self, ephemeral=self._ephemeral) # Try to send the message normally
+        except Exception:
+            await self._interaction.followup.send(embed=self._embeds[self._current_page], view=self, ephemeral=self._ephemeral) # Try to follow up if an exception occurs
     
     async def _first_page(self, interaction: discord.Interaction):
         # Enable/Disable First/Last Page Buttons
