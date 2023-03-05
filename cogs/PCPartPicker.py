@@ -46,6 +46,7 @@ class PCPartPickerList:
     def __init__(self, list_url):
         # Initialize Variables
         self._list_url = list_url
+        self._list_name = ""
         self._components = []
 
         try:
@@ -60,6 +61,8 @@ class PCPartPickerList:
             driver.get(self._list_url)
 
             # Scrape all of the required component data from the URL
+            self._list_name = (driver.find_element(By.CLASS_NAME, "pageTitle")).text
+
             for product_element in driver.find_elements(By.CLASS_NAME, "tr__product"):
                 component_type = product_element.find_element(By.CLASS_NAME, "td__component")
                 component_name = product_element.find_element(By.CLASS_NAME, "td__name")
@@ -73,15 +76,20 @@ class PCPartPickerList:
         finally:
             driver.close()
     
-    # Readonly property to access the components list
-    @property
-    def components(self):
-        return self._components
-
     # Readonly property to access the PCPartPicker list URL
     @property
     def list_url(self):
         return self._list_url
+    
+    # Readonly property to access the PCPartPicker list name
+    @property
+    def list_name(self):
+        return self._list_name
+    
+    # Readonly property to access the components list
+    @property
+    def components(self):
+        return self._components
     
     # Defines a string representation of a PCPartPickerList
     def __str__(self):
@@ -118,12 +126,13 @@ class PCPartPicker(commands.Cog):
 
         # Create the main info embed, which is a summary of all components
         main_info_embed = discord.Embed(
-            title = interaction.user.display_name + "'s PCPartPicker List",
+            title = pcpartpickerlist.list_name,
             url = list_url,
             description = "Component Summary:",
             color  = discord.Color.purple()
         )
 
+        main_info_embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         main_info_embed.set_thumbnail(url="https://pcpartpicker.com/static/forever/img/blog/new-site.jpg")
         main_info_embed.set_footer(text="Press the arrow buttons below to cycle through each component.")
 
