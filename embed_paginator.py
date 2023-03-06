@@ -18,6 +18,13 @@ class EmbedPaginator(discord.ui.View):
         self._next_page_button = discord.ui.Button(emoji=discord.PartialEmoji(name="▶️"))
         self._goto_last_page_button = discord.ui.Button(emoji=discord.PartialEmoji(name="⏭️"))
 
+        # Disable all buttons if there is only one embed present
+        if self._number_of_embeds == 1:
+            self._goto_first_page_button.disabled = True
+            self._previous_page_button.disabled = True
+            self._next_page_button.disabled = True
+            self._goto_last_page_button.disabled = True
+
         # Assign Callback Functions to Buttons
         self._goto_first_page_button.callback = self._first_page
         self._previous_page_button.callback = self._previous_page
