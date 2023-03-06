@@ -73,6 +73,12 @@ class GenshinCommands(commands.Cog):
         else:
             genshin_authkey = authkey
 
+        # Set the thumbnail image to an acquaint or intertwined fate depending on banner type
+        if banner_type.value == genshin.models.BannerType.PERMANENT:
+            thumbnail_image_url = "https://static.wikia.nocookie.net/gensin-impact/images/2/22/Item_Acquaint_Fate.png"
+        else:
+            thumbnail_image_url = "https://static.wikia.nocookie.net/gensin-impact/images/1/1f/Item_Intertwined_Fate.png"
+
         # Create the genshin client with the provided authkey
         genshin_client = genshin.Client(authkey=genshin_authkey)
 
@@ -88,7 +94,7 @@ class GenshinCommands(commands.Cog):
         )
 
         wish_embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-        wish_embed.set_thumbnail(url="https://static.wikia.nocookie.net/gensin-impact/images/d/d4/Item_Primogem.png")
+        wish_embed.set_thumbnail(url=thumbnail_image_url)
     
         # Iterate through all of the wishes for the provided banner type and limit (API returns an async iterator)
         async for wish in genshin_client.wish_history(banner_type=banner_type.value, limit=limit):
@@ -113,7 +119,7 @@ class GenshinCommands(commands.Cog):
                 )
 
                 wish_embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-                wish_embed.set_thumbnail(url="https://static.wikia.nocookie.net/gensin-impact/images/d/d4/Item_Primogem.png")
+                wish_embed.set_thumbnail(url=thumbnail_image_url)
 
                 # Reset the wish counter
                 wish_count = 0
