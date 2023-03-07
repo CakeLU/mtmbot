@@ -138,84 +138,6 @@ class GenshinCommands(commands.Cog):
         
         # Send the paginator containing all embeds
         await EmbedPaginator(interaction=interaction, embeds=embeds).send_paginator()
-    
-    @app_commands.command(
-        name = "genshin_character_talents",
-        description = "Get details about a character's talents from Genshin Impact."
-    )
-
-    @app_commands.describe(
-        character_name = "Provide a character's name (can be a partial name)."
-    )
-
-    async def genshin_character_talents(self, interaction: discord.Interaction, character_name: str):
-        # Defer the response to provide more time for processing
-        await interaction.response.defer()
-
-        # Initialize the genshin client and set cookies (located in .env file)
-        genshin_client = genshin.Client()
-        genshin_client.set_cookies(ltuid=GENSHIN_LTUID, ltoken=GENSHIN_LTOKEN)
-
-        embeds = []
-
-        # Get all characters that match the query
-        genshin_characters = await genshin_client.get_calculator_characters(query=character_name.capitalize())
-
-        if len(genshin_characters) == 0:
-            await interaction.followup.send("No characters found.", ephemeral=True) # If no characters are returned, send the user a message
-        else:
-            genshin_character = genshin_characters[0] # If more than one character is returned, only use the first one
-            
-            # Map element types to colors for the embeds
-            embed_colors = {"Anemo" : discord.Color.from_rgb(166, 244, 203),
-                            "Geo": discord.Color.from_rgb(245, 215, 97),
-                            "Electro" : discord.Color.from_rgb(222, 186, 255),
-                            "Dendro" : discord.Color.from_rgb(178, 235, 42),
-                            "Hydro" : discord.Color.from_rgb(8, 228, 255),
-                            "Pyro" : discord.Color.from_rgb(255, 168, 112),
-                            "Cryo" : discord.Color.from_rgb(195, 250, 252)}
-            
-            # Map element types to thumbnail images for the embeds
-            thumbnail_image_urls = {"Anemo" : "https://rerollcdn.com/GENSHIN/Elements/Element_Anemo.png",
-                                    "Geo": "https://rerollcdn.com/GENSHIN/Elements/Element_Geo.png",
-                                    "Electro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Electro.png",
-                                    "Dendro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Dendro.png",
-                                    "Hydro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Hydro.png",
-                                    "Pyro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Pyro.png",
-                                    "Cryo" : "https://rerollcdn.com/GENSHIN/Elements/Element_Cryo.png"}
-            
-            # Create the character embed
-            character_embed = discord.Embed(
-                title = "{} ({}★)".format(genshin_character.name, genshin_character.rarity),
-                description="Weapon Type: {}".format(genshin_character.weapon_type),
-                color = embed_colors[genshin_character.element]
-            )
-
-            character_embed.set_thumbnail(url=thumbnail_image_urls[genshin_character.element])
-            character_embed.set_image(url=genshin_character.icon)
-
-            # Add the character embed to the list, this will always be the first page
-            embeds.append(character_embed)
-
-            # Get all talents for the queried character
-            genshin_character_talents = await genshin_client.get_character_talents(genshin_character.id)
-
-            # Iterate through the talents
-            for talent in genshin_character_talents:
-                # Create an embed for each talent
-                talent_embed = discord.Embed(
-                    title = talent.name,
-                    description="Max Level: {}".format(talent.max_level),
-                    color = embed_colors[genshin_character.element]
-                )
-                
-                talent_embed.set_thumbnail(url=talent.icon)
-
-                # Add the talent embed to the list
-                embeds.append(talent_embed)
-            
-            # Send the paginator containing all embeds
-            await EmbedPaginator(interaction=interaction, embeds=embeds).send_paginator()
 
     @app_commands.command(
         name = "genshin_character_query",
@@ -404,6 +326,144 @@ class GenshinCommands(commands.Cog):
                 # Add the embed to the list
                 embeds.append(weapon_embed)
             
+            # Send the paginator containing all embeds
+            await EmbedPaginator(interaction=interaction, embeds=embeds).send_paginator()
+    
+    @app_commands.command(
+        name = "genshin_character_showcase",
+        description = "Showcase one of your characters from Genshin Impact."
+    )
+
+    @app_commands.describe(
+        uid = "Provide a Genshin Impact UID.",
+        character_name = "Provide a character's name (can be a partial name)."
+    )
+
+    async def genshin_character_showcase(self, interaction: discord.Interaction, uid: str, character_name: str):
+        # Defer the response to provide more time for processing
+        await interaction.response.defer()
+
+        # Initialize the genshin client and set cookies (located in .env file)
+        genshin_client = genshin.Client()
+        genshin_client.set_cookies(ltuid=GENSHIN_LTUID, ltoken=GENSHIN_LTOKEN)
+
+        # Get genshin user details and statistics
+        genshin_user_details = await genshin_client.get_genshin_user(uid=uid)
+
+        genshin_characters = [character for character in genshin_user_details.characters if character_name.lower() in character.name.lower()]
+
+        if len(genshin_characters) == 0:
+            await interaction.followup.send("No characters found.", ephemeral=True) # If no characters are returned, send the user a message
+        else:
+            genshin_character = genshin_characters[0] # If more than one character is returned, only use the first one
+            
+            genshin_weapon = genshin_character.weapon
+            genshin_artifacts = genshin_character.artifacts
+
+            embeds = []
+
+            # Map character element types to colors for the embeds
+            character_embed_colors = {
+                "Anemo" : discord.Color.from_rgb(166, 244, 203),
+                "Geo": discord.Color.from_rgb(245, 215, 97),
+                "Electro" : discord.Color.from_rgb(222, 186, 255),
+                "Dendro" : discord.Color.from_rgb(178, 235, 42),
+                "Hydro" : discord.Color.from_rgb(8, 228, 255),
+                "Pyro" : discord.Color.from_rgb(255, 168, 112),
+                "Cryo" : discord.Color.from_rgb(195, 250, 252)
+            }
+            
+            # Map character element types to thumbnail images for the embeds
+            character_thumbnail_image_urls = {
+                "Anemo" : "https://rerollcdn.com/GENSHIN/Elements/Element_Anemo.png",
+                "Geo": "https://rerollcdn.com/GENSHIN/Elements/Element_Geo.png",
+                "Electro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Electro.png",
+                "Dendro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Dendro.png",
+                "Hydro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Hydro.png",
+                "Pyro" : "https://rerollcdn.com/GENSHIN/Elements/Element_Pyro.png",
+                "Cryo" : "https://rerollcdn.com/GENSHIN/Elements/Element_Cryo.png"
+            }
+
+            # Map weapon rarities to colors for the embeds
+            weapon_embed_colors = {
+                5 : discord.Color.from_rgb(161, 109, 47),
+                4 : discord.Color.from_rgb(124, 103, 163),
+                3 : discord.Color.from_rgb(89, 112, 141),
+                2 : discord.Color.from_rgb(88, 138, 126),
+                1 : discord.Color.from_rgb(123, 132, 127)
+            }
+            
+            # Map weapon types to thumbnail images for the embeds
+            weapon_thumbnail_image_urls = {
+                "Claymore" : "https://static.wikia.nocookie.net/gensin-impact/images/6/66/Icon_Claymore.png",
+                "Sword": "https://static.wikia.nocookie.net/gensin-impact/images/8/81/Icon_Sword.png",
+                "Bow" : "https://static.wikia.nocookie.net/gensin-impact/images/8/81/Icon_Bow.png",
+                "Catalyst" : "https://static.wikia.nocookie.net/gensin-impact/images/2/27/Icon_Catalyst.png",
+                "Polearm" : "https://static.wikia.nocookie.net/gensin-impact/images/6/6a/Icon_Polearm.png"
+            }
+
+            # Map artifact pos names to thumbnail images for the embeds
+            artifact_thumbnail_image_urls = {
+                "Flower of Life" : "https://static.wikia.nocookie.net/gensin-impact/images/2/2d/Icon_Flower_of_Life.png",
+                "Plume of Death": "https://static.wikia.nocookie.net/gensin-impact/images/8/8b/Icon_Plume_of_Death.png",
+                "Sands of Eon" : "https://static.wikia.nocookie.net/gensin-impact/images/9/9f/Icon_Sands_of_Eon.png",
+                "Goblet of Eonothem" : "https://static.wikia.nocookie.net/gensin-impact/images/3/37/Icon_Goblet_of_Eonothem.png",
+                "Circlet of Logos" : "https://static.wikia.nocookie.net/gensin-impact/images/6/64/Icon_Circlet_of_Logos.png"
+            }
+
+            # Create an embed for the character
+            character_embed = discord.Embed(
+                title = "{} ({}★)".format(genshin_character.name, genshin_character.rarity),
+                color = character_embed_colors[genshin_character.element]
+            )
+            
+            character_embed.add_field(name="Level", value=genshin_character.level, inline=False)
+            character_embed.add_field(name="Constellation", value=genshin_character.constellation, inline=False)
+            character_embed.add_field(name="Friendship", value=genshin_character.friendship, inline=False)
+
+            character_embed.set_author(name="{} (AR: {}) [UID: {}]".format(genshin_user_details.info.nickname, genshin_user_details.info.level, uid))
+            character_embed.set_thumbnail(url=character_thumbnail_image_urls[genshin_character.element])
+            character_embed.set_image(url=genshin_character.icon)
+
+            # Add the character embed to the list
+            embeds.append(character_embed)
+
+            # Create an embed for the weapon
+            weapon_embed = discord.Embed(
+                title = "{} ({}★)".format(genshin_weapon.name, genshin_weapon.rarity),
+                description=genshin_weapon.description,
+                color = weapon_embed_colors[genshin_weapon.rarity]
+            )
+            
+            weapon_embed.add_field(name="Level", value=genshin_weapon.level, inline=False)
+            weapon_embed.add_field(name="Refinement", value=genshin_weapon.refinement, inline=False)
+            weapon_embed.add_field(name="Weapon Type", value=genshin_weapon.type, inline=False)
+
+            weapon_embed.set_author(name="{} (AR: {}) [UID: {}]".format(genshin_user_details.info.nickname, genshin_user_details.info.level, uid))
+            weapon_embed.set_thumbnail(url=weapon_thumbnail_image_urls[genshin_weapon.type])
+            weapon_embed.set_image(url=genshin_weapon.icon)
+            
+            # Add the weapon embed to the list
+            embeds.append(weapon_embed)
+
+            # Iterate through all of the equipped artifacts
+            for genshin_artifact in genshin_artifacts:
+                # Create an embed for each artifact
+                artifact_embed = discord.Embed(
+                    title = "{} ({}★)".format(genshin_artifact.name, genshin_artifact.rarity),
+                    color = weapon_embed_colors[genshin_artifact.rarity]
+                )
+
+                artifact_embed.add_field(name="Set", value=genshin_artifact.set.name, inline=False)
+                artifact_embed.add_field(name="Level", value=genshin_artifact.level, inline=False)
+
+                artifact_embed.set_author(name="{} (AR: {}) [UID: {}]".format(genshin_user_details.info.nickname, genshin_user_details.info.level, uid))
+                artifact_embed.set_thumbnail(url=artifact_thumbnail_image_urls[genshin_artifact.pos_name])
+                artifact_embed.set_image(url=genshin_artifact.icon)
+                
+                # Add the artifact embed to the list
+                embeds.append(artifact_embed)
+
             # Send the paginator containing all embeds
             await EmbedPaginator(interaction=interaction, embeds=embeds).send_paginator()
 
